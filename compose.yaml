@@ -1,0 +1,76 @@
+services:
+  t1-clean-arch:
+    build: t1-clean-arch
+    image: t1-clean-arch
+    ports:
+      - "8080:8080"
+    networks:
+      - t2-network
+    depends_on:
+      - name-server
+      - rabbitmq
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://name-server:8761/eureka
+      - eureka.instance.hostname=t1-clean-arch
+      - eureka.client.registerWithEureka=true
+      - eureka.client.fetchRegistry=true
+      - spring.rabbitmq.host=rabbitmq
+      - spring.rabbitmq.port=5672
+      - spring.rabbitmq.username=engsoft2
+      - spring.rabbitmq.password=engsoft2
+      - SPRING_AMQP_DESERIALIZATION_TRUST_ALL=true
+  api-gateway:
+    build: api-gateway
+    image: gateway
+    ports:
+      - "8765:8765"
+    networks:
+      - t2-network
+    depends_on:
+      - name-server
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://name-server:8761/eureka
+      - eureka.instance.hostname=api-gateway
+      - eureka.client.registerWithEureka=true
+      - eureka.client.fetchRegistry=true
+      - spring.cloud.gateway.discovery.locator.enabled=true
+      - spring.cloud.gateway.discovery.locator.lower-case-service-id=true
+  ass-cache:
+    build: ass-cache
+    image: ass-cache
+    ports:
+      - "8082"
+    networks:
+      - t2-network
+    depends_on:
+      - name-server
+      - rabbitmq
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://name-server:8761/eureka
+      - eureka.instance.hostname=ass-cache
+      - eureka.client.registerWithEureka=true
+      - eureka.client.fetchRegistry=true
+      - spring.rabbitmq.host=rabbitmq
+      - spring.rabbitmq.port=5672
+      - spring.rabbitmq.username=engsoft2
+      - spring.rabbitmq.password=engsoft2
+      - SPRING_AMQP_DESERIALIZATION_TRUST_ALL=true
+  name-server:
+    build: name-server
+    image: nameserver
+    ports:
+      - "8761:8761"
+    networks:
+      - t2-network
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - t2-network
+    environment:
+      - RABBITMQ_DEFAULT_USER=engsoft2
+      - RABBITMQ_DEFAULT_PASS=engsoft2
+networks:
+  t2-network:
